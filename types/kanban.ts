@@ -26,5 +26,7 @@ export interface KanbanStore extends KanbanState {
   undo: () => void;
   redo: () => void;
   deleteCard: (columnId: string, cardId: string) => void;
+  history: KanbanState[];
+  historyIndex: number;
 }
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { KanbanStore, Column, Card } from '../types/kanban';
+import { KanbanStore, Column, Card, KanbanState } from '../types/kanban';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useKanbanStore = create<KanbanStore>()(
@@ -7,13 +7,13 @@ const useKanbanStore = create<KanbanStore>()(
     (set, get) => ({
       columns: [],
       searchTerm: '',
-      history: [{ columns: [] }],
+      history: [{ columns: [], searchTerm: '' }],
       historyIndex: 0,
 
       addColumn: (title) => {
         const newColumn: Column = { id: Date.now().toString(), title, cards: [] };
         set((state) => {
-          const newState = { columns: [...state.columns, newColumn] };
+          const newState: KanbanState = { columns: [...state.columns, newColumn], searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -24,7 +24,7 @@ const useKanbanStore = create<KanbanStore>()(
 
       deleteColumn: (id) => {
         set((state) => {
-          const newState = { columns: state.columns.filter((col) => col.id !== id) };
+          const newState: KanbanState = { columns: state.columns.filter((col) => col.id !== id), searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -38,7 +38,7 @@ const useKanbanStore = create<KanbanStore>()(
           const newColumns = state.columns.map((col) =>
             col.id === id ? { ...col, title } : col
           );
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -53,7 +53,7 @@ const useKanbanStore = create<KanbanStore>()(
           const newColumns = state.columns.map((col) =>
             col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col
           );
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -74,7 +74,7 @@ const useKanbanStore = create<KanbanStore>()(
                 }
               : col
           );
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -90,7 +90,7 @@ const useKanbanStore = create<KanbanStore>()(
           const destCol = newColumns.find((col) => col.id === destColId)!;
           const [movedCard] = sourceCol.cards.splice(sourceIndex, 1);
           destCol.cards.splice(destIndex, 0, movedCard);
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -104,7 +104,7 @@ const useKanbanStore = create<KanbanStore>()(
           const newColumns = [...state.columns];
           const [movedColumn] = newColumns.splice(sourceIndex, 1);
           newColumns.splice(destIndex, 0, movedColumn);
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],
@@ -113,7 +113,14 @@ const useKanbanStore = create<KanbanStore>()(
         });
       },
 
-      setSearchTerm: (term) => set({ searchTerm: term }),
+      setSearchTerm: (term) => set((state) => {
+        const newState: KanbanState = { columns: state.columns, searchTerm: term };
+        return {
+          ...newState,
+          history: [...state.history.slice(0, state.historyIndex + 1), newState],
+          historyIndex: state.historyIndex + 1,
+        };
+      }),
 
       undo: () => {
         set((state) => {
@@ -146,7 +153,7 @@ const useKanbanStore = create<KanbanStore>()(
               ? { ...col, cards: col.cards.filter((card) => card.id !== cardId) }
               : col
           );
-          const newState = { columns: newColumns };
+          const newState: KanbanState = { columns: newColumns, searchTerm: state.searchTerm };
           return {
             ...newState,
             history: [...state.history.slice(0, state.historyIndex + 1), newState],

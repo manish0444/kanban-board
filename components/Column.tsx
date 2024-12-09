@@ -8,11 +8,12 @@ import useKanbanStore from '../store/kanbanStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash, Edit } from 'lucide-react';
+import { DroppableProps } from '@hello-pangea/dnd';
 
 const Droppable = dynamic(
-  () => import('@hello-pangea/dnd').then(mod => mod.Droppable),
+  () => import('@hello-pangea/dnd').then((mod) => mod.Droppable as React.ComponentType<DroppableProps>),
   { ssr: false }
-);
+) as React.ComponentType<DroppableProps>;
 
 const Draggable = dynamic(
   () => import('@hello-pangea/dnd').then(mod => mod.Draggable),

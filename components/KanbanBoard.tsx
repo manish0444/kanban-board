@@ -1,51 +1,49 @@
 'use client'
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import useKanbanStore from '../store/kanbanStore';
 import Column from './Column';
 import SearchBar from './SearchBar';
 import { Button } from '@/components/ui/button';
 import { Plus, Undo, Redo } from 'lucide-react';
+import { DragDropContext, DroppableProvided, DropResult } from '@hello-pangea/dnd';
+import type { DroppableProps } from '@hello-pangea/dnd';
 
-const DragDropContext = dynamic(
-  () => import('@hello-pangea/dnd').then(mod => mod.DragDropContext),
-  { ssr: false }
-);
-
+// Dynamically import the Droppable component with type assertion
 const Droppable = dynamic(
-  () => import('@hello-pangea/dnd').then(mod => mod.Droppable),
+  () => import('@hello-pangea/dnd').then((mod) => mod.Droppable as React.ComponentType<DroppableProps>),
   { ssr: false }
-);
+) as React.ComponentType<DroppableProps>;
 
 const KanbanBoard: React.FC = () => {
-  const { columns, addColumn, moveCard, moveColumn, searchTerm, setSearchTerm, undo, redo } = useKanbanStore();
-
-  const onDragEnd = (result: any) => {
+  const { columns, addColumn, moveCard, moveColumn, searchTerm, undo, redo } = useKanbanStore();
+  
+  const onDragEnd = (result: DropResult) => {
     const { source, destination, type } = result;
     if (!destination) return;
-
+    
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) {
       return;
     }
-
+    
     if (type === 'COLUMN') {
       moveColumn(source.index, destination.index);
     } else {
       moveCard(source.droppableId, destination.droppableId, source.index, destination.index);
     }
   };
-
+  
   const filteredColumns = columns.map(column => ({
     ...column,
-    cards: column.cards.filter(card => 
+    cards: column.cards.filter(card =>
       card.content.toLowerCase().includes(searchTerm.toLowerCase())
     )
   })).filter(column => column.cards.length > 0 || column.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
+  
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -64,7 +62,7 @@ const KanbanBoard: React.FC = () => {
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="board" type="COLUMN" direction="horizontal">
-          {(provided: any) => (
+          {(provided: DroppableProvided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
@@ -73,7 +71,7 @@ const KanbanBoard: React.FC = () => {
               {filteredColumns.map((column, index) => (
                 <Column key={column.id} column={column} index={index} />
               ))}
-              {provided.placeholder}
+              {provided.placeholder as ReactNode}
             </div>
           )}
         </Droppable>
