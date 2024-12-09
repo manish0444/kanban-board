@@ -4,7 +4,7 @@ This project is a feature-rich Kanban board application built with Next.js, Reac
 
 ## Setup Instructions
 
-1. Clone the repository: `git clone https://github.com/your-username/kanban-board.git`
+1. Clone the repository: `git clone https://github.com/manish0444/kanban-board.git`
 2. Navigate to the project directory: `cd kanban-board`
 3. Install dependencies: `npm install`
 4. Run the development server: `npm run dev`
