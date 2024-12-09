@@ -1,14 +1,15 @@
 'use client'
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import dynamic from 'next/dynamic';
 import useKanbanStore from '../store/kanbanStore';
 import Column from './Column';
 import SearchBar from './SearchBar';
 import { Button } from '@/components/ui/button';
 import { Plus, Undo, Redo } from 'lucide-react';
-import { DragDropContext, DroppableProvided, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, DroppableProvided, DropResult, DragStart } from '@hello-pangea/dnd';
 import type { DroppableProps } from '@hello-pangea/dnd';
+import { motion } from 'framer-motion';
 
 // Dynamically import the Droppable component with type assertion
 const Droppable = dynamic(
@@ -18,9 +19,18 @@ const Droppable = dynamic(
 
 const KanbanBoard: React.FC = () => {
   const { columns, addColumn, moveCard, moveColumn, searchTerm, undo, redo } = useKanbanStore();
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   
+  const onDragStart = (start: DragStart) => {
+    if (start.type === 'DEFAULT') {
+      setDraggingCardId(start.draggableId);
+    }
+  };
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination, type } = result;
+    setDraggingCardId(null);
+    
     if (!destination) return;
     
     if (
@@ -60,7 +70,7 @@ const KanbanBoard: React.FC = () => {
           </Button>
         </div>
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <Droppable droppableId="board" type="COLUMN" direction="horizontal">
           {(provided: DroppableProvided) => (
             <div
@@ -69,7 +79,16 @@ const KanbanBoard: React.FC = () => {
               className="flex flex-wrap gap-4"
             >
               {filteredColumns.map((column, index) => (
-                <Column key={column.id} column={column} index={index} />
+                <motion.div
+                  key={column.id}
+                  initial={false}
+                  animate={{
+                    scale: draggingCardId && !column.cards.find(card => card.id === draggingCardId) ? 1.05 : 1,
+                    transition: { type: 'spring', stiffness: 300, damping: 30 }
+                  }}
+                >
+                  <Column column={column} index={index} />
+                </motion.div>
               ))}
               {provided.placeholder as ReactNode}
             </div>
