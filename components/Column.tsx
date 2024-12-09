@@ -8,7 +8,7 @@ import useKanbanStore from '../store/kanbanStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash, Edit } from 'lucide-react';
-import { DroppableProps } from '@hello-pangea/dnd';
+import type { DroppableProps, DraggableProvided, DroppableProvided } from '@hello-pangea/dnd';
 
 const Droppable = dynamic(
   () => import('@hello-pangea/dnd').then((mod) => mod.Droppable as React.ComponentType<DroppableProps>),
@@ -37,7 +37,7 @@ const Column: React.FC<ColumnProps> = ({ column, index }) => {
 
   return (
     <Draggable draggableId={column.id} index={index}>
-      {(provided: any) => (
+      {(provided: DraggableProvided) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
@@ -68,7 +68,7 @@ const Column: React.FC<ColumnProps> = ({ column, index }) => {
             </div>
           </div>
           <Droppable droppableId={column.id} type="CARD">
-            {(provided: any) => (
+            {(provided: DroppableProvided) => (
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
@@ -77,7 +77,7 @@ const Column: React.FC<ColumnProps> = ({ column, index }) => {
                 {column.cards.map((card, cardIndex) => (
                   <Card key={card.id} card={card} index={cardIndex} columnId={column.id} />
                 ))}
-                {provided.placeholder}
+                {provided.placeholder as React.ReactNode}
               </div>
             )}
           </Droppable>

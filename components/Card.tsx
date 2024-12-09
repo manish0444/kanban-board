@@ -6,8 +6,8 @@ import { Card as CardType } from '../types/kanban';
 import useKanbanStore from '../store/kanbanStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit } from 'lucide-react';
-import { Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
+import type { DraggableProvided } from '@hello-pangea/dnd';
 
 const Draggable = dynamic(
   () => import('@hello-pangea/dnd').then(mod => mod.Draggable),
@@ -32,7 +32,7 @@ const Card: React.FC<CardProps> = ({ card, index, columnId }) => {
 
   return (
     <Draggable draggableId={card.id} index={index}>
-      {(provided: any) => (
+      {(provided: DraggableProvided) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
